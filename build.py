@@ -142,6 +142,7 @@ INDEX_TEMPLATE = """<!DOCTYPE html>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{site_title}</title>
 <meta name="description" content="{site_desc}">
+<meta name="google-site-verification" content="Yy1UbbQQu4Oav9rL7LByselcH0V3KHstxtRUDphT8Bc" />
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
