@@ -10,15 +10,19 @@ import os
 import re
 import sys
 
+from make_cover import make_cover
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_DIR = os.path.dirname(BASE_DIR)
 CONTENT_DIR = os.path.join(PROJECT_DIR, "content")
 POSTS_DIR = os.path.join(BASE_DIR, "posts")
+IMAGES_DIR = os.path.join(BASE_DIR, "images")
 SITE_TITLE = "생활정보 꿀팁"
 SITE_DESC = "생활에 도움되는 정보와 추천템을 모아드립니다."
 SITE_URL = os.environ.get("SITE_URL", "https://REPLACE_ME.github.io/daily-info-blog")
 
 os.makedirs(POSTS_DIR, exist_ok=True)
+os.makedirs(IMAGES_DIR, exist_ok=True)
 
 
 def slugify(name):
@@ -118,11 +122,13 @@ POST_TEMPLATE = """<!DOCTYPE html>
 <meta property="og:title" content="{title}">
 <meta property="og:description" content="{desc}">
 <meta property="og:type" content="article">
+<meta property="og:image" content="{site_url}/images/{slug}.jpg">
 <link rel="stylesheet" href="../style.css">
 </head>
 <body>
 <header class="site-header"><a href="../index.html">{site_title}</a></header>
 <main class="post">
+<img class="cover" src="../images/{slug}.jpg" alt="{title}">
 <h1>{title}</h1>
 <div class="tags">{tags_html}</div>
 <div class="content">
@@ -171,9 +177,11 @@ a{color:var(--accent)}
 .tags{color:var(--muted);font-size:.9rem;margin-bottom:24px}
 blockquote{background:#f3f6ff;border-left:4px solid var(--accent);margin:24px 0;padding:12px 16px;border-radius:4px;font-size:.95rem}
 .post-list{list-style:none;padding:0}
-.post-list li{padding:16px 0;border-bottom:1px solid #eee}
+.post-list li{display:flex;gap:16px;align-items:center;padding:16px 0;border-bottom:1px solid #eee}
+.post-list .thumb{width:96px;height:64px;object-fit:cover;border-radius:8px;flex-shrink:0}
 .post-list a{font-weight:600;text-decoration:none;color:var(--fg)}
 .post-list .meta{color:var(--muted);font-size:.85rem;margin-top:4px}
+.post .cover{width:100%;aspect-ratio:1200/630;object-fit:cover;border-radius:10px;margin:8px 0 24px}
 .lead{color:var(--muted)}
 .back{margin-top:40px}
 footer{margin-top:60px;color:var(--muted);font-size:.85rem;text-align:center}
@@ -190,6 +198,10 @@ def main():
         slug = re.sub(r"[^a-zA-Z0-9\-가-힣]", "-", slug)
         post = parse_post(path)
         tags_html = " ".join(f'<span>{html.escape(t)}</span>' for t in post["tags"])
+        img_path = os.path.join(IMAGES_DIR, f"{slug}.jpg")
+        if not os.path.exists(img_path):
+            make_cover(post["title"], img_path)
+
         out_path = os.path.join(POSTS_DIR, f"{slug}.html")
         with open(out_path, "w", encoding="utf-8") as f:
             f.write(POST_TEMPLATE.format(
@@ -198,10 +210,13 @@ def main():
                 desc=html.escape(post["desc"]),
                 tags_html=tags_html,
                 body=post["body_html"],
+                slug=slug,
+                site_url=SITE_URL,
             ))
         items_html.append(
-            f'<li><a href="posts/{slug}.html">{html.escape(post["title"])}</a>'
-            f'<div class="meta">{folder}</div></li>'
+            f'<li><img class="thumb" src="images/{slug}.jpg" alt="">'
+            f'<div><a href="posts/{slug}.html">{html.escape(post["title"])}</a>'
+            f'<div class="meta">{folder}</div></div></li>'
         )
 
     with open(os.path.join(BASE_DIR, "index.html"), "w", encoding="utf-8") as f:
