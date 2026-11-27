@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://rltjddn123-creator.github.io/daily-info-blog/sitemap.xml
